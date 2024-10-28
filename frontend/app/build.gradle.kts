@@ -78,4 +78,5 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.compose.navigation)
     implementation(libs.play.services.location)
+    implementation(libs.coil.compose)
 }

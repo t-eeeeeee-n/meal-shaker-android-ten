@@ -2,7 +2,6 @@ package com.example.frontend.data.repository
 
 import com.example.frontend.data.api.RetrofitInstance
 import com.example.frontend.data.models.SearchResponse
-import com.example.frontend.data.models.Shop
 
 class SearchRepository {
     suspend fun searchByLocation(latitude: String, longitude: String, genre: String?, range: String?): SearchResponse {

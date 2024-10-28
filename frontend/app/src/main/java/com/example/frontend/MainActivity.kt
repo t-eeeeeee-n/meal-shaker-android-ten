@@ -12,9 +12,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.frontend.domain.SearchViewModel
 import com.example.frontend.ui.screens.ResultScreen
 import com.example.frontend.ui.screens.SearchScreen
@@ -38,7 +40,6 @@ class MainActivity : ComponentActivity() {
             ActivityResultContracts.RequestPermission()
         ) { isGranted: Boolean ->
             if (isGranted) {
-                Log.d("isGranted", "isGranted")
                 // パーミッションが許可されたら位置情報を取得
                 getCurrentLocation { latitude, longitude ->
                     setupNavigation(latitude, longitude)
@@ -47,29 +48,12 @@ class MainActivity : ComponentActivity() {
                 // 許可されなかった場合は東京駅の緯度経度を渡す
                 val tokyoLat = 35.681236
                 val tokyoLng = 139.767125
-                Log.d("isGranted", "not isGranted")
                 setupNavigation(tokyoLat, tokyoLng)
             }
         }
 
         // FINE_LOCATION のパーミッションをリクエスト
         requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-
-//        setContent {
-//            FrontendTheme {
-//                Surface(
-//                    modifier = Modifier.fillMaxSize(),
-//                    color = MaterialTheme.colorScheme.background
-//                ) {
-//                    val navController = rememberNavController()
-//                    val searchViewModel: SearchViewModel = viewModel()
-//                    NavHost(navController = navController, startDestination = "search") {
-//                        composable("search") { SearchScreen(navController, searchViewModel) }
-//                        composable("result") { ResultScreen(navController, searchViewModel) }
-//                    }
-//                }
-//            }
-//        }
     }
 
     // 位置情報を取得する関数
@@ -83,7 +67,6 @@ class MainActivity : ComponentActivity() {
             } else {
                 // 位置情報を取得できない場合の処理
                 Log.e("Location", "位置情報が取得できません")
-//                onLocationReceived(35.681236, 139.767125)
             }
         }
     }
@@ -102,8 +85,43 @@ class MainActivity : ComponentActivity() {
                         composable("search") {
                             SearchScreen(navController, searchViewModel, latitude, longitude)
                         }
-                        composable("result") {
-                            ResultScreen(navController, searchViewModel)
+                        composable(
+                            route = "result/{selectedTabIndex}/{latitude}/{longitude}/{genre}/{range}/{largeServiceArea}/{largeArea}/{middleArea}/{smallArea}",
+                            arguments = listOf(
+                                navArgument("selectedTabIndex") { type = NavType.StringType; nullable = true },
+                                navArgument("latitude") { type = NavType.StringType; nullable = true },
+                                navArgument("longitude") { type = NavType.StringType; nullable = true },
+                                navArgument("genre") { type = NavType.StringType; nullable = true },
+                                navArgument("range") { type = NavType.StringType; nullable = true },
+                                navArgument("largeServiceArea") { type = NavType.StringType; nullable = true },
+                                navArgument("largeArea") { type = NavType.StringType; nullable = true },
+                                navArgument("middleArea") { type = NavType.StringType; nullable = true },
+                                navArgument("smallArea") { type = NavType.StringType; nullable = true }
+                            )
+                        ) { backStackEntry ->
+                            val selectedTabIndex = backStackEntry.arguments?.getString("selectedTabIndex")
+                            val lat = backStackEntry.arguments?.getString("latitude")
+                            val lon = backStackEntry.arguments?.getString("longitude")
+                            val genre = backStackEntry.arguments?.getString("genre")
+                            val range = backStackEntry.arguments?.getString("range")
+                            val largeServiceArea = backStackEntry.arguments?.getString("largeServiceArea")
+                            val largeArea = backStackEntry.arguments?.getString("largeArea")
+                            val middleArea = backStackEntry.arguments?.getString("middleArea")
+                            val smallArea = backStackEntry.arguments?.getString("smallArea")
+
+                            ResultScreen(
+                                navController = navController,
+                                searchViewModel = searchViewModel,
+                                selectedTabIndex = selectedTabIndex,
+                                latitude = lat,
+                                longitude = lon,
+                                genre = genre,
+                                range = range,
+                                largeServiceArea = largeServiceArea,
+                                largeArea = largeArea,
+                                middleArea = middleArea,
+                                smallArea = smallArea
+                            )
                         }
                     }
                 }
