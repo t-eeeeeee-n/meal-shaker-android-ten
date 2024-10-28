@@ -77,4 +77,5 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.compose.navigation)
+    implementation(libs.play.services.location)
 }

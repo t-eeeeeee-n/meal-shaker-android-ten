@@ -3,6 +3,8 @@ package com.example.frontend.utils
 import com.example.frontend.data.models.Range
 
 object Constants {
+    const val NULL_SELECT_ITEM = "ランダム"
+
     val rangeOptions = listOf(
         Range("1", "100m"),
         Range("2", "500m"),

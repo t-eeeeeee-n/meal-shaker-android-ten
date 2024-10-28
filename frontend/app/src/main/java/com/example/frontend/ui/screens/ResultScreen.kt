@@ -37,7 +37,6 @@ fun ResultScreen(
 
 @Composable
 fun ShopItem(shop: Shop) {
-    Log.d("ShopItem", "Rendering shop: ${shop.name}")
     Column {
         Text(text = "店名: ${shop.name}")
         Text(text = "住所: ${shop.address}")

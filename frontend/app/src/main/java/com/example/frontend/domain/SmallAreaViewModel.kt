@@ -20,7 +20,6 @@ class SmallAreaViewModel(repository: SmallAreaRepository = SmallAreaRepository()
     private fun fetchOptions(smallAreaCode: String) {
         viewModelScope.launch {
             try {
-                Log.d("SmallAreaVM", "Fetching genres...")
                 selectOptionsFlow.value = repository.getOptions(smallAreaCode)
             } catch (e: IOException) {
                 Log.e("SmallAreaVM", "Network error", e)

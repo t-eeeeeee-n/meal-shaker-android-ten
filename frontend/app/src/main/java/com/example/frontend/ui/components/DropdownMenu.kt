@@ -23,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.frontend.utils.Constants
 
 @Composable
 fun DropdownMenu(
@@ -30,7 +31,8 @@ fun DropdownMenu(
     selectedItem: String?,
     options: List<String>,
     onItemSelected: (String?) -> Unit,
-    hiddenFlg: Boolean = false
+    hiddenFlg: Boolean = false,
+    unSelectedOption: Boolean = true,
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -62,14 +64,16 @@ fun DropdownMenu(
                     expanded = expanded,
                     onDismissRequest = { expanded = false }
                 ) {
-                    // 未選択オプション
-                    DropdownMenuItem(
-                        text = { Text("未選択") },
-                        onClick = {
-                            onItemSelected(null)
-                            expanded = false
-                        }
-                    )
+                    if(unSelectedOption){
+                        // 未選択オプション
+                        DropdownMenuItem(
+                            text = { Text(Constants.NULL_SELECT_ITEM) },
+                            onClick = {
+                                onItemSelected(null)
+                                expanded = false
+                            }
+                        )
+                    }
                     // 通常オプション
                     options.forEach { option ->
                         DropdownMenuItem(
