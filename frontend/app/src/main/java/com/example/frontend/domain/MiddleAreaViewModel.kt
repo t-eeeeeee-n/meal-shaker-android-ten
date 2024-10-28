@@ -20,7 +20,6 @@ class MiddleAreaViewModel(repository: MiddleAreaRepository = MiddleAreaRepositor
     private fun fetchOptions(largeAreaCode: String) {
         viewModelScope.launch {
             try {
-                Log.d("MiddleAreaVM", "Fetching genres...")
                 selectOptionsFlow.value = repository.getOptions(largeAreaCode)
             } catch (e: IOException) {
                 Log.e("MiddleAreaVM", "Network error", e)

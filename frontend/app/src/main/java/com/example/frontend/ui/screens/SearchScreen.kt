@@ -1,10 +1,10 @@
 package com.example.frontend.ui.screens
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -35,12 +36,16 @@ import com.example.frontend.domain.RangeViewModel
 import com.example.frontend.domain.SearchViewModel
 import com.example.frontend.domain.SmallAreaViewModel
 import com.example.frontend.ui.components.DropdownMenu
+import com.example.frontend.ui.components.ErrorMessage
 import com.example.frontend.ui.components.SearchButton
+import com.example.frontend.utils.Constants
 
 @Composable
 fun SearchScreen(
     navController: NavController,
     searchViewModel: SearchViewModel,
+    latitude: Double,
+    longitude: Double,
     rangeViewModel: RangeViewModel = viewModel(),
     genreViewModel: GenreViewModel = viewModel(),
     largeServiceAreaViewModel: LargeServiceAreaViewModel = viewModel(),
@@ -65,6 +70,8 @@ fun SearchScreen(
 
     var selectedTabIndex by remember { mutableIntStateOf(0) }
 
+    var errorMessage by remember { mutableStateOf("") }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -73,26 +80,40 @@ fun SearchScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
+
+        if (errorMessage.isNotEmpty()) {
+            ErrorMessage(
+                message = errorMessage,
+                onDismiss = { errorMessage = "" }
+            )
+        } else {
+            Spacer(modifier = Modifier.height(72.dp))
+        }
+
         Box(modifier = Modifier
             .fillMaxSize()
             .weight(1f), contentAlignment = Alignment.Center) {
+
             SearchButton(onClick = {
                 if (selectedTabIndex == 0) {
-                    // 緯度経度での検索
-                    val latitude = "34.0570920484" // 現在地などから取得する必要あり
-                    val longitude = "133.0145550388"
-                    searchViewModel.searchByLocation(latitude, longitude, selectedGenre?.name, selectedRange?.name)
+                    searchViewModel.searchByLocation(latitude.toString(),
+                        longitude.toString(), selectedGenre?.name, selectedRange?.name)
+                    navController.navigate("result")
                 } else {
-                    // 地域での検索
-                    searchViewModel.searchByArea(
-                        selectedLargeServiceArea?.code ?: "",
-                        selectedLargeArea?.code,
-                        selectedMiddleArea?.code,
-                        selectedSmallArea?.code,
-                        selectedGenre?.code
-                    )
+                    if (selectedLargeServiceArea == null) {
+                        errorMessage = "地方を選択してください"
+                    } else {
+                        // 地域での検索
+                        searchViewModel.searchByArea(
+                            selectedLargeServiceArea?.code ?: "",
+                            selectedLargeArea?.code,
+                            selectedMiddleArea?.code,
+                            selectedSmallArea?.code,
+                            selectedGenre?.code
+                        )
+                        navController.navigate("result")
+                    }
                 }
-                navController.navigate("result")
             })
         }
 
@@ -103,16 +124,17 @@ fun SearchScreen(
                 Column(modifier = Modifier) {
                     DropdownMenu(
                         label = "半径",
-                        selectedItem = selectedRange?.name ?: "未選択",
+                        selectedItem = selectedRange?.name ?: rangeOptions.firstOrNull()?.name,
                         options = rangeOptions.map { it.name },
                         onItemSelected = { selectedName ->
                             val select = rangeOptions.firstOrNull { it.name == selectedName }
                             rangeViewModel.setOption(select)
-                        }
+                        },
+                        unSelectedOption = false
                     )
                     DropdownMenu(
                         label = "ジャンル",
-                        selectedItem = selectedGenre?.name ?: "未選択",
+                        selectedItem = selectedGenre?.name ?: Constants.NULL_SELECT_ITEM,
                         options = genreOptions.map { it.name },
                         onItemSelected = { selectedName ->
                             val select = genreOptions.firstOrNull { it.name == selectedName }
@@ -125,7 +147,8 @@ fun SearchScreen(
                 Column(modifier = Modifier) {
                     DropdownMenu(
                         label = "地方",
-                        selectedItem = selectedLargeServiceArea?.name ?: "未選択",
+//                        selectedItem = selectedLargeServiceArea?.name ?: largeServiceAreaOptions.firstOrNull()?.name,
+                        selectedItem = selectedLargeServiceArea?.name ?: "選択してください",
                         options = largeServiceAreaOptions.map { it.name },
                         onItemSelected = { selectedName ->
                             val selectedArea = largeServiceAreaOptions.firstOrNull { it.name == selectedName }
@@ -136,11 +159,12 @@ fun SearchScreen(
                             largeAreaViewModel.setOption(null)
                             middleAreaViewModel.setOption(null)
                             smallAreaViewModel.setOption(null)
-                        }
+                        },
+                        unSelectedOption = false
                     )
                     DropdownMenu(
                         label = "都道府県",
-                        selectedItem = selectedLargeArea?.name ?: "未選択",
+                        selectedItem = selectedLargeArea?.name ?: Constants.NULL_SELECT_ITEM,
                         options = largeAreaOptions.map { it.name },
                         onItemSelected = { selectedName ->
                             val selectedArea = largeAreaOptions.firstOrNull { it.name == selectedName }
@@ -154,7 +178,7 @@ fun SearchScreen(
                     )
                     DropdownMenu(
                         label = "地域",
-                        selectedItem = selectedMiddleArea?.name ?: "未選択",
+                        selectedItem = selectedMiddleArea?.name ?: Constants.NULL_SELECT_ITEM,
                         options = middleAreaOptions.map { it.name },
                         onItemSelected = { selectedName ->
                             val selectedArea = middleAreaOptions.firstOrNull { it.name == selectedName }
@@ -166,7 +190,7 @@ fun SearchScreen(
                     )
                     DropdownMenu(
                         label = "地区",
-                        selectedItem = selectedSmallArea?.name ?: "未選択",
+                        selectedItem = selectedSmallArea?.name ?: Constants.NULL_SELECT_ITEM,
                         options = smallAreaOptions.map { it.name },
                         onItemSelected = { selectedName ->
                             val selectedArea = smallAreaOptions.firstOrNull { it.name == selectedName }
@@ -176,7 +200,7 @@ fun SearchScreen(
                     )
                     DropdownMenu(
                         label = "ジャンル",
-                        selectedItem = selectedGenre?.name ?: "未選択",
+                        selectedItem = selectedGenre?.name ?: Constants.NULL_SELECT_ITEM,
                         options = genreOptions.map { it.name },
                         onItemSelected = { selectedName ->
                             val select = genreOptions.firstOrNull { it.name == selectedName }

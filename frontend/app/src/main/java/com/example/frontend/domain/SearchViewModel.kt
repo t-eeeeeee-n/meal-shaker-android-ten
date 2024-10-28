@@ -19,7 +19,6 @@ class SearchViewModel(private val repository: SearchRepository = SearchRepositor
         viewModelScope.launch {
             try {
                 val response = repository.searchByLocation(latitude, longitude, genre, range)
-                Log.d("SearchVM", "searchResult updated with ${response.shop.size} shops") // 更新の確認
                 _searchResult.value = response
             } catch (e: IOException) {
                 Log.e("SearchVM", "Network error", e)
@@ -38,7 +37,6 @@ class SearchViewModel(private val repository: SearchRepository = SearchRepositor
         viewModelScope.launch {
             try {
                 val response = repository.searchByArea(largeServiceArea, largeArea, middleArea, smallArea, genre)
-                Log.d("SearchVM", "searchResult updated with ${response.shop.size} shops") // 更新の確認
                 _searchResult.value = response
             } catch (e: IOException) {
                 Log.e("SearchVM", "Network error", e)
