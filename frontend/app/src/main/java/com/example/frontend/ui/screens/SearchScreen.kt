@@ -96,9 +96,12 @@ fun SearchScreen(
 
             SearchButton(onClick = {
                 if (selectedTabIndex == 0) {
+                    // 現在地での検索
                     searchViewModel.searchByLocation(latitude.toString(),
                         longitude.toString(), selectedGenre?.name, selectedRange?.name)
-                    navController.navigate("result")
+                    navController.navigate(
+                        "result/${selectedTabIndex}/${latitude}/${longitude}/${selectedGenre?.name}/${selectedRange?.name}/null/null/null/null"
+                    )
                 } else {
                     if (selectedLargeServiceArea == null) {
                         errorMessage = "地方を選択してください"
@@ -111,7 +114,9 @@ fun SearchScreen(
                             selectedSmallArea?.code,
                             selectedGenre?.code
                         )
-                        navController.navigate("result")
+                        navController.navigate(
+                            "result/${selectedTabIndex}/null/null/${selectedGenre?.name}/null/${selectedLargeServiceArea?.code}/${selectedLargeArea?.code}/${selectedMiddleArea?.code}/${selectedSmallArea?.code}"
+                        )
                     }
                 }
             })
