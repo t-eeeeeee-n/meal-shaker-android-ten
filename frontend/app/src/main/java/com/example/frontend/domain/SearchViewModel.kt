@@ -26,7 +26,7 @@ class SearchViewModel(private val repository: SearchRepository = SearchRepositor
         private set
 
     fun searchByLocation(latitude: String, longitude: String, genre: String?, range: String?) {
-        Log.d("searchByLocation",  "${latitude}, ${longitude}, ${genre}, $range")
+
         viewModelScope.launch {
             _isLoading.value = true
             try {
