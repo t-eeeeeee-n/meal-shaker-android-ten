@@ -1,8 +1,13 @@
 package com.example.frontend.ui.components
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.CheckCircle
@@ -24,13 +29,20 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.frontend.data.models.Shop
 
 @Composable
 fun ShopItem(shop: Shop) {
+    val context = LocalContext.current
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -92,10 +104,35 @@ fun ShopItem(shop: Shop) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.Search, contentDescription = "リンク", tint = MaterialTheme.colorScheme.primary)
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = shop.urls.pc,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary
+
+                val annotatedLinkString = buildAnnotatedString {
+                    val str = shop.urls.pc
+                    val startIndex = 0
+                    val endIndex = str.length
+                    append(str)
+                    addStyle(
+                        style = SpanStyle(
+                            color = MaterialTheme.colorScheme.primary,
+                            textDecoration = TextDecoration.Underline
+                        ), start = startIndex, end = endIndex
+                    )
+                    addStringAnnotation(
+                        tag = "URL",
+                        annotation = shop.urls.pc,
+                        start = startIndex,
+                        end = endIndex
+                    )
+                }
+
+                BasicText(
+                    text = annotatedLinkString,
+                    modifier = Modifier.clickable {
+                        val annotation = annotatedLinkString.getStringAnnotations("URL", 0, annotatedLinkString.length)
+                        annotation.firstOrNull()?.let {
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(it.item))
+                            context.startActivity(intent)
+                        }
+                    }
                 )
             }
 
