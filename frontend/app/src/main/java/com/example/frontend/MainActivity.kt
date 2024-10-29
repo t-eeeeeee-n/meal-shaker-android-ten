@@ -3,7 +3,9 @@ package com.example.frontend
 import android.Manifest
 import android.annotation.SuppressLint
 import android.location.Location
+import android.location.LocationRequest
 import android.os.Bundle
+import android.os.Looper
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -22,12 +24,16 @@ import com.example.frontend.ui.screens.ResultScreen
 import com.example.frontend.ui.screens.SearchScreen
 import com.example.frontend.ui.theme.FrontendTheme
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.tasks.Task
+
 
 class MainActivity : ComponentActivity() {
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var locationCallback: LocationCallback
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,15 +41,24 @@ class MainActivity : ComponentActivity() {
         // FusedLocationProviderClient の初期化
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
+        // LocationCallback の定義
+        locationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult) {
+                val location: Location? = locationResult.lastLocation
+                if (location != null) {
+                    setupNavigation(location.latitude, location.longitude)
+                }
+                fusedLocationClient.removeLocationUpdates(this) // 一度位置情報を取得したら停止
+            }
+        }
+
         // パーミッションリクエストのセットアップ
         val requestPermissionLauncher = registerForActivityResult(
             ActivityResultContracts.RequestPermission()
         ) { isGranted: Boolean ->
             if (isGranted) {
                 // パーミッションが許可されたら位置情報を取得
-                getCurrentLocation { latitude, longitude ->
-                    setupNavigation(latitude, longitude)
-                }
+                startLocationUpdates()
             } else {
                 // 許可されなかった場合は東京駅の緯度経度を渡す
                 val tokyoLat = 35.681236
@@ -54,6 +69,24 @@ class MainActivity : ComponentActivity() {
 
         // FINE_LOCATION のパーミッションをリクエスト
         requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+    }
+
+    // 定期的に位置情報を取得する
+    @SuppressLint("MissingPermission")
+    private fun startLocationUpdates() {
+        // LocationRequest.Builderを使用してLocationRequestを作成
+        val locationRequest = com.google.android.gms.location.LocationRequest.Builder(
+            com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY, // 高精度の位置情報リクエスト
+            10000 // 更新頻度（10秒ごと）
+        ).setMinUpdateIntervalMillis(5000) // 最短の更新間隔（5秒）
+            .build()
+
+        // 位置情報の更新をリクエスト
+        fusedLocationClient.requestLocationUpdates(
+            locationRequest,
+            locationCallback,
+            Looper.getMainLooper()
+        )
     }
 
     // 位置情報を取得する関数
